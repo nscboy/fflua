@@ -14,7 +14,13 @@ typedef  short int16_t;
 typedef  unsigned short uint16_t;
 typedef  char int8_t;
 typedef  unsigned char uint8_t;
-#define SPRINTF_F _snprintf_s
+
+#if _MSC_VER>1310
+	#define SPRINTF_F _snprintf_s
+#else
+	#define SPRINTF_F _snprintf
+	#define strncpy_s strncpy
+#endif
 
 struct strtoll_tool_t
 {
@@ -122,12 +128,16 @@ public:
         string ret;
         char buff[1024];
 
-        va_list argp;
-        va_start(argp, fmt);
+		va_list argp;
+		va_start(argp, fmt);
 #ifndef _WIN32
-        vsnprintf(buff, sizeof(buff), fmt, argp);
+		vsnprintf(buff, sizeof(buff), fmt, argp);
 #else
-        vsnprintf_s(buff, sizeof(buff), sizeof(buff), fmt, argp);
+#if _MSC_VER>1310
+		vsnprintf_s(buff, sizeof(buff), sizeof(buff), fmt, argp);
+#else
+		SPRINTF_F(buff, sizeof(buff), fmt, argp);
+#endif
 #endif
         va_end(argp);
 
